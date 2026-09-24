@@ -202,7 +202,12 @@ genuinely have nothing for:
 If the thread is too vague to tell, say so plainly under `**Context**`.
 - `labels`: {labels}
 
-Write in the same language the thread is written in."
+Write every field in English, whatever language the thread is in. A thread in \
+French, Spanish or any other language still produces an English `title` and \
+`summary` — translate as you summarise rather than echoing the original wording. \
+The one exception is text whose exact characters matter: error messages, log lines, \
+code, identifiers, file paths and command output stay verbatim, and you may gloss \
+them in English alongside if the meaning is not obvious."
     )
 }
 
@@ -334,6 +339,29 @@ mod tests {
         let sent = server.last_request_json();
         let system = sent["messages"][0]["content"].as_str().unwrap();
         assert!(system.contains("no labels available"), "{system}");
+    }
+
+    #[tokio::test]
+    async fn the_prompt_asks_for_english_whatever_the_thread_speaks() {
+        let server = crate::testutil::spawn(
+            200,
+            chat_response(&json!({ "title": "t", "summary": "s", "labels": [] }).to_string()),
+        )
+        .await;
+        let cfg = test_config(&server.base);
+
+        draft(&reqwest::Client::new(), &cfg, &test_transcript(), &[])
+            .await
+            .unwrap();
+
+        let system = server.last_request_json()["messages"][0]["content"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        assert!(
+            system.contains("Write every field in English"),
+            "the draft must not come back in the thread's language: {system}"
+        );
     }
 
     #[test]
