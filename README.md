@@ -101,8 +101,16 @@ A thread is untrusted input from anyone who can type in your server, so:
 4. Copy the token into `DISCORD_TOKEN`.
 5. **OAuth2 → URL Generator**: scope `bot`, permissions *View Channels*,
    *Read Message History*, *Send Messages*, *Send Messages in Threads*,
-   *Add Reactions*. Open the generated URL to invite it. (Buttons and modals
-   need no extra scope — `applications.commands` is only for slash commands.)
+   *Embed Links*, *Add Reactions*. Open the generated URL to invite it.
+   *Embed Links* is what lets the bot post the draft card — without it every
+   `@issue` fails with `50013 Missing Permissions`. Buttons and modals need no
+   extra scope; `applications.commands` is only for slash commands.
+
+   Or use this directly, with your application ID:
+
+   ```
+   https://discord.com/oauth2/authorize?client_id=<APPLICATION_ID>&permissions=274877992000&scope=bot
+   ```
 
 ### 2. GitHub
 
@@ -178,6 +186,10 @@ Store the three secrets in Secret Manager rather than `--set-env-vars`.
 - **Single shard.** Fine well past the 2 500-guild mark Discord starts requiring
   shards at, but not beyond.
 - Messages from bots and webhooks are skipped when reading a thread.
+- **A public bot with `GITHUB_REPO` set files from any server that invites it.**
+  If you tick *Public Bot*, set only `GITHUB_REPO_MAP` and leave `GITHUB_REPO`
+  unset — unmapped servers then get "no GitHub repo is configured" instead of
+  filing into your repo.
 - Only attachments are carried over, not link previews or embeds.
 
 ## Development
